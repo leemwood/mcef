@@ -54,6 +54,7 @@
     - 支持递归子模块拉取以确保 `java-cef` 源码完整（虽然运行时已移除下载，但编译仍需其中的接口定义）。
     - **修复代理冲突**: 注释了 `gradle.properties` 中的本地代理设置（127.0.0.1:7890），这些设置会导致 CI 环境因找不到代理而构建失败。建议本地开发环境的代理配置放在用户目录的 `.gradle/gradle.properties` 中。
     - **自动上传产物**: 增加了 `upload-artifact` 步骤，构建成功后会自动上传各平台的 `.jar` 产物（过滤了 dev/sources/javadoc 包）。
+    - **CI 调试优化**: 在 `build.yml` 中添加了 `--scan` 和 `--warning-mode all` 标志，并增加了构建失败时自动上传 Gradle 报告（`**/build/reports/`）的步骤，以便在 GitHub Actions 界面直接分析失败原因。
 
 
 
