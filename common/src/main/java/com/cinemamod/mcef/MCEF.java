@@ -98,12 +98,13 @@ public final class MCEF {
     }
 
     /**
-     * Will assert that MCEF has been initialized; throws a {@link RuntimeException} if not.
      * Creates a new Chromium web browser with some starting URL. Can set it to be transparent rendering.
-     * @return the {@link MCEFBrowser} web browser instance
+     * @return the {@link MCEFBrowser} web browser instance, or null if MCEF is not initialized
      */
     public static MCEFBrowser createBrowser(String url, boolean transparent) {
-        assertInitialized();
+        if (!isInitialized()) {
+            return null;
+        }
         if (MCEFPlatform.getPlatform().isAndroid()) {
             return new MCEFBrowser(new AndroidMCEFBrowser(url, transparent));
         }
@@ -111,19 +112,17 @@ public final class MCEF {
     }
 
     /**
-     * Will assert that MCEF has been initialized; throws a {@link RuntimeException} if not.
      * Creates a new Chromium web browser with some starting URL.
-     * @return the {@link MCEFBrowser} web browser instance
+     * @return the {@link MCEFBrowser} web browser instance, or null if MCEF is not initialized
      */
     public static MCEFBrowser createBrowser(String url) {
         return createBrowser(url, false);
     }
 
     /**
-     * Will assert that MCEF has been initialized; throws a {@link RuntimeException} if not.
      * Creates a new Chromium web browser with some starting URL, width, and height.
      * Can set it to be transparent rendering.
-     * @return the {@link MCEFBrowser} web browser instance
+     * @return the {@link MCEFBrowser} web browser instance, or null if MCEF is not initialized
      */
     public static MCEFBrowser createBrowser(String url, boolean transparent, int width, int height) {
         MCEFBrowser browser = createBrowser(url, transparent);
@@ -147,12 +146,6 @@ public final class MCEF {
     public static void shutdown() {
         if (isInitialized()) {
             initialized = false;
-        }
-    }
-
-    private static void assertInitialized() {
-        if (!isInitialized()) {
-            throw new RuntimeException("MCEF is not initialized!");
         }
     }
 }

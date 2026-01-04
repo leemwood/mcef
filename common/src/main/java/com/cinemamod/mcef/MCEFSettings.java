@@ -31,12 +31,19 @@ import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
 public class MCEFSettings {
-    private static final Path PATH = Minecraft.getInstance().gameDirectory
-            .toPath()
-            .resolve("config")
-            .resolve("mcef")
-            .resolve("mcef.properties");
+    private static Path PATH;
     private static int deleteRetries = 0;
+
+    private static Path getPath() {
+        if (PATH == null) {
+            PATH = Minecraft.getInstance().gameDirectory
+                    .toPath()
+                    .resolve("config")
+                    .resolve("mcef")
+                    .resolve("mcef.properties");
+        }
+        return PATH;
+    }
 
     private String userAgent;
     private boolean useCache;
@@ -75,7 +82,7 @@ public class MCEFSettings {
     }
 
     public void save() throws IOException {
-        File file = PATH.toFile();
+        File file = getPath().toFile();
 
         file.getParentFile().mkdirs();
 
@@ -93,7 +100,7 @@ public class MCEFSettings {
     }
 
     public void load() throws IOException {
-        File file = PATH.toFile();
+        File file = getPath().toFile();
 
         if (!file.exists()) {
             save();

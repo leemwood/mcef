@@ -30,17 +30,45 @@
 - **接口化解耦**: 通过 `IMCEFBrowser` 接口彻底解耦了对 `java-cef` 的编译依赖。
 - **CI 优化**: 修复了 CI 中的代理冲突，并增加了构建产物上传和失败报告分析功能。
 - **编译修复**: 移除了 `MCEF.java` 中对 `CefCursorType` 的残余引用，确保脱离 JCEF 也能编译。
+- **初始化修复**:
+    - `MCEFSettings` 的配置文件路径改为延迟加载，避免在模组初始化阶段 `Minecraft.getInstance()` 返回 `null` 导致崩溃。
+    - `MCEFAddon` 的方块和物品注册采用了标准的 `Registry.register` 链式调用，并显式调用了 `.setId()` 方法设置 `ResourceKey`。在 Minecraft 1.21.4 (Mojang Mappings) 环境下，方块和物品的 `Properties` 必须通过 `.setId(ResourceKey)` 设置 ID，否则在实例化时会触发 "Block id not set" 导致的 `NullPointerException`。
+    - 注册了自定义的创造模式物品栏分类（`CreativeModeTab`），并将浏览器屏幕物品加入其中。
+    - **初始化安全性增强**: 移除了 `MCEF.createBrowser` 中的强制断言（`assertInitialized`），改为在未初始化或非支持平台（如 Windows）时返回 `null`。同时在 `BrowserBlockEntity` 中增加了对 `MCEF.isInitialized()` 的检查，确保在不支持浏览器功能的平台上不会触发 `RuntimeException` 导致游戏崩溃。
+- **注意**: 在 Fabric 1.21.4 的 Mojang 映射中，该方法名为 `setId` 而非 `id`。此外，创造模式物品栏需要通过 `FabricItemGroup` 显式注册并绑定物品。
+- **已知问题**:
+    - **OSHI 权限错误**: 在 Android 15+ 环境下，Minecraft 使用的 OSHI 库在读取 CPU 频率信息时会触发 `AccessDeniedException` (SELinux 限制)。这属于系统级权限限制，不影响模组核心功能，可忽略。
 - **后续任务**:
     - 在 `AndroidMCEFBrowser` 中通过 JNI/反射调用 `android.webkit.WebView`。
     - 适配 `MCEFRenderer` 以支持 `SurfaceTexture` 纹理更新。
     - 实现 Minecraft 到 WebView 的事件转换逻辑。
 
+### 新增模组开发计划 (MCEF-Addon)
+- **目标版本**: Fabric 1.21.4
+- **定位**: 基于 MCEF 核心库的功能扩展模组。
+- **核心功能**:
+    - **屏幕方块**: 实现可渲染浏览器的方块，支持多方块拼接（最小 4x5）。
+    - **交互系统**: 实现射线检测驱动的鼠标左键/右键点击模拟。
+    - **输入系统**: 通过 GUI 输入框向浏览器发送键盘字符。
+- **工程结构**: 位于 MCEF 项目下的子文件夹 `e:\project\mcef\mcef-addon`，通过 Maven/项目引用依赖 MCEF。
+
+### MCEF-Addon 优化与修复
+- **材质更新**: 使用了 WebDisplays 的 `screen0.png` 作为 `browser_screen.png` 的基础材质，解决了原有材质缺失或不美观的问题。
+- **分辨率优化**: 将屏幕方块的默认浏览器分辨率从 `1024x768` 降低至 `512x384`。
+    - **原因**: 降低安卓 (ARM64) 平台上的显存占用，修复因分辨率过高导致的纹理创建失败和游戏崩溃问题。
+    - **同步修改**: 同时更新了 [BrowserScreenBlock.java](file:///e:/project/mcef/mcef-addon/src/main/java/com/cinemamod/mcef/addon/BrowserScreenBlock.java) 中的鼠标点击坐标映射逻辑，确保点击位置依然准确。
+
 ### 构建与环境配置
 - **E 盘构建命令**:
-    - 使用以下命令确保所有依赖和缓存都在 E 盘，且使用正确的 JDK：
+    - **构建主项目 (MCEF Core)**: 在项目根目录执行：
       ```powershell
       $env:JAVA_HOME = "E:\jdk21"; $env:GRADLE_USER_HOME = "E:\.gradle"; $env:PATH = "E:\jdk21\bin;" + $env:PATH; ./gradlew build
       ```
+    - **构建扩展模组 (MCEF-Addon)**: 在 `e:\project\mcef\mcef-addon` 目录下执行：
+      ```powershell
+      $env:JAVA_HOME = "E:\jdk21"; $env:GRADLE_USER_HOME = "E:\.gradle"; $env:PATH = "E:\jdk21\bin;" + $env:PATH; ./gradlew build
+      ```
+    - **注意**: 由于 `mcef-addon` 是通过 `includeBuild` 包含主项目的独立构建，在 `mcef-addon` 目录下执行时不需要带 `:mcef-addon:` 前缀。
 - **编译修复**:
     - `IMCEFBrowser` 增加了默认方法 `sendMouseMove(int x, int y)` 以支持旧版调用。
     - `JCEFBrowser` 的 `isTransparent()` 修复为调用 `renderer.isTransparent()` 以避免递归或父类缺失方法错误。

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "mcef-addon",
+  "version": "${version}",
+  "name": "MCEF Addon",
+  "description": "An addon for MCEF providing screen blocks and interactions.",
+  "authors": [
+    "CinemaMod Group"
+  ],
+  "contact": {
+    "homepage": "https://github.com/CinemaMod/mcef",
+    "sources": "https://github.com/CinemaMod/mcef"
+  },
+  "license": "LGPL-2.1",
+  "icon": "assets/mcef-addon/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.cinemamod.mcef.addon.MCEFAddon"
+    ],
+    "client": [
+      "com.cinemamod.mcef.addon.MCEFAddonClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=21",
+    "mcef": "*"
+  }
+}
