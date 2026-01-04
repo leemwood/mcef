@@ -16,19 +16,20 @@
 ## 知识点
 ### MCEF (Minecraft Chromium Embedded Framework) 加载机制
 - **JCEF 基础**: 该项目基于 JCEF (Java Chromium Embedded Framework) 实现，将 Chromium 浏览器嵌入 Java 应用中。
-- **离屏渲染 (OSR)**: 使用 `CefBrowserOsr` 进行离屏渲染。Chromium 不会创建独立的系统窗口，而是将页面内容渲染到内存缓冲区（ByteBuffer）。
+- **离屏渲染 (OSR)**: 使用 `CefBrowserOsr` 进行离屏渲染（仅限桌面平台 JCEF）。安卓平台采用原生 WebView。
 - **OpenGL 纹理映射**:
     - [MCEFRenderer.java](file:///e:/project/mcef/common/src/main/java/com/cinemamod/mcef/MCEFRenderer.java) 创建一个 OpenGL 纹理。
     - 当 Chromium 触发 `onPaint` 回调时，将缓冲区内容通过 `glTexImage2D` 或 `glTexSubImage2D` 更新到该纹理中。
-- **动态下载**: [MCEFDownloader.java](file:///e:/project/mcef/common/src/main/java/com/cinemamod/mcef/MCEFDownloader.java) 负责在运行时从远程服务器下载对应平台的 JCEF 原生二进制文件（如 `.dll`, `.so`, `.dylib`）。
-- **输入转发**: [MCEFBrowser.java](file:///e:/project/mcef/common/src/main/java/com/cinemamod/mcef/MCEFBrowser.java) 监听 Minecraft 的鼠标和键盘事件，并将其转发给 JCEF 实例，实现页面交互。
-- **Mixin 注入**: 通过 Mixin（如 [CefInitMixin.java](file:///e:/project/mcef/common/src/main/java/com/cinemamod/mcef/mixins/CefInitMixin.java)）在 Minecraft 启动流程中自动初始化 CEF。
+- **动态下载 (已移除)**: 原有的 `MCEFDownloader.java` 及相关下载逻辑已被移除。项目现在仅支持安卓平台，不再支持桌面平台的自动下载和初始化。
+- **输入转发**: [MCEFBrowser.java](file:///e:/project/mcef/common/src/main/java/com/cinemamod/mcef/MCEFBrowser.java) 监听 Minecraft 的鼠标和键盘事件，并将其转发给浏览器实例。
+- **显式初始化**: 不再使用 Mixin 拦截启动流程，而是通过 [FabricMCEFClientMod.java](file:///e:/project/mcef/fabric/src/main/java/com/cinemamod/mcef/FabricMCEFClientMod.java) 和 [NeoForgeMCEFMod.java](file:///e:/project/mcef/neoforge/src/main/java/com/cinemamod/mcef/NeoForgeMCEFMod.java) 的入口显式调用 `MCEF.initialize()`。
 
 ### 安卓 (ARM64) 环境适配进度
 - **已完成架构重构**:
     - **接口化**: 引入 `IMCEFBrowser` 接口，解耦 JCEF 依赖。
     - **兼容性包装**: `MCEFBrowser` 类改为委托模式，内部根据平台持有 `JCEFBrowser` (桌面) 或 `AndroidMCEFBrowser` (安卓) 实例。
-    - **初始化优化**: `MCEF.initialize()` 在安卓平台自动跳过 JCEF 下载和初始化流程。
+    - **初始化优化**: `MCEF.initialize()` 仅支持安卓平台，非安卓平台将返回失败并打印警告。
+    - **移除下载逻辑**: 删除了所有 JCEF 下载、解压和下载菜单相关的代码。
     - **反射桥接**: `AndroidBridge` 实现了跨启动器（Pojav/FCL/ZL）的 ActivityThread 反射方案，动态获取 Context。
 - **后续任务**:
     - 在 `AndroidMCEFBrowser` 中通过 JNI/反射调用 `android.webkit.WebView`。
@@ -50,7 +51,7 @@
 - **GitHub Actions CI**:
     - 已添加 `.github/workflows/build.yml` 以实现自动构建验证。
     - 配置为使用 JDK 21，在每次 push 和 pull request 时触发。
-    - 支持递归子模块拉取以确保 `java-cef` 源码完整。
+    - 支持递归子模块拉取以确保 `java-cef` 源码完整（虽然运行时已移除下载，但编译仍需其中的接口定义）。
     - **修复代理冲突**: 注释了 `gradle.properties` 中的本地代理设置（127.0.0.1:7890），这些设置会导致 CI 环境因找不到代理而构建失败。建议本地开发环境的代理配置放在用户目录的 `.gradle/gradle.properties` 中。
     - **自动上传产物**: 增加了 `upload-artifact` 步骤，构建成功后会自动上传各平台的 `.jar` 产物（过滤了 dev/sources/javadoc 包）。
 

@@ -7,10 +7,6 @@
   "mixins": [
   ],
   "client": [
-    "CefDownloadMixin",
-    "CefInitMixin",
-    "CefRenderUpdateMixin",
-    "CefWindowsShutdownMixin"
   ],
   "injectors": {
     "defaultRequire": 1

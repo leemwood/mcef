@@ -12,109 +12,119 @@ public class MCEFBrowser implements IMCEFBrowser {
         this.delegate = delegate;
     }
 
+    public MCEFBrowser(String url, boolean transparent) {
+        MCEFPlatform platform = MCEFPlatform.getPlatform();
+        if (platform.isAndroid()) {
+            this.delegate = new AndroidMCEFBrowser(url, transparent);
+        } else {
+            MCEF.getLogger().error("JCEF is no longer supported on this platform.");
+            this.delegate = null; // Or a dummy implementation
+        }
+    }
+
     @Override
     public void loadURL(String url) {
-        delegate.loadURL(url);
+        if (delegate != null) delegate.loadURL(url);
     }
 
     @Override
     public void resize(int width, int height) {
-        delegate.resize(width, height);
+        if (delegate != null) delegate.resize(width, height);
     }
 
     @Override
     public void close() {
-        delegate.close();
+        if (delegate != null) delegate.close();
     }
 
     @Override
     public MCEFRenderer getRenderer() {
-        return delegate.getRenderer();
+        return delegate != null ? delegate.getRenderer() : null;
     }
 
     @Override
     public void sendMouseMove(int x, int y, int modifiers) {
-        delegate.sendMouseMove(x, y, modifiers);
+        if (delegate != null) delegate.sendMouseMove(x, y, modifiers);
     }
 
     @Override
     public void sendMousePress(int x, int y, int modifiers, int button, boolean isRelease, int clickCount) {
-        delegate.sendMousePress(x, y, modifiers, button, isRelease, clickCount);
+        if (delegate != null) delegate.sendMousePress(x, y, modifiers, button, isRelease, clickCount);
     }
 
     @Override
     public void sendMouseWheel(int x, int y, int modifiers, int delta) {
-        delegate.sendMouseWheel(x, y, modifiers, delta);
+        if (delegate != null) delegate.sendMouseWheel(x, y, modifiers, delta);
     }
 
     @Override
     public void sendKeyPress(int key, char character, int modifiers) {
-        delegate.sendKeyPress(key, character, modifiers);
+        if (delegate != null) delegate.sendKeyPress(key, character, modifiers);
     }
 
     @Override
     public void sendKeyRelease(int key, char character, int modifiers) {
-        delegate.sendKeyRelease(key, character, modifiers);
+        if (delegate != null) delegate.sendKeyRelease(key, character, modifiers);
     }
 
     @Override
     public void sendKeyType(int key, char character, int modifiers) {
-        delegate.sendKeyType(key, character, modifiers);
+        if (delegate != null) delegate.sendKeyType(key, character, modifiers);
     }
 
     @Override
     public void setFocus(boolean focus) {
-        delegate.setFocus(focus);
+        if (delegate != null) delegate.setFocus(focus);
     }
 
     @Override
     public void runJS(String script, String url) {
-        delegate.runJS(script, url);
+        if (delegate != null) delegate.runJS(script, url);
     }
 
     @Override
     public String getURL() {
-        return delegate.getURL();
+        return delegate != null ? delegate.getURL() : "";
     }
 
     @Override
     public boolean canGoBack() {
-        return delegate.canGoBack();
+        return delegate != null && delegate.canGoBack();
     }
 
     @Override
     public boolean canGoForward() {
-        return delegate.canGoForward();
+        return delegate != null && delegate.canGoForward();
     }
 
     @Override
     public void goBack() {
-        delegate.goBack();
+        if (delegate != null) delegate.goBack();
     }
 
     @Override
     public void goForward() {
-        delegate.goForward();
+        if (delegate != null) delegate.goForward();
     }
 
     @Override
     public void reload() {
-        delegate.reload();
+        if (delegate != null) delegate.reload();
     }
 
     @Override
     public void reloadIgnoreCache() {
-        delegate.reloadIgnoreCache();
+        if (delegate != null) delegate.reloadIgnoreCache();
     }
 
     @Override
     public void stopLoad() {
-        delegate.stopLoad();
+        if (delegate != null) delegate.stopLoad();
     }
 
     @Override
     public boolean isTransparent() {
-        return delegate.isTransparent();
+        return delegate != null && delegate.isTransparent();
     }
 
     // Add methods that were previously in MCEFBrowser but not in IMCEFBrowser for compatibility

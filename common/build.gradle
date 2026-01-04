@@ -55,24 +55,11 @@ dependencies {
 }
 
 sourceSets {
-    jcef {
-        java {
-            srcDir "java-cef/java"
-            exclude "**/tests/**"
-        }
-    }
-
     main {
-        compileClasspath += jcef.output
-        runtimeClasspath += jcef.output
     }
 }
 
-processResources.dependsOn(processJcefResources)
-
 jar {
-    from sourceSets.jcef.output.classesDirs
-    from sourceSets.jcef.output.resourcesDir
 }
 
 idea {

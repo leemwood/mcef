@@ -27,6 +27,7 @@ import net.fabricmc.loader.api.FabricLoader;
 public class FabricMCEFClientMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        MCEF.initialize();
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
             new MCEFExampleMod();
         }

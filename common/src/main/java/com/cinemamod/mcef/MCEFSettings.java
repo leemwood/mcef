@@ -38,34 +38,12 @@ public class MCEFSettings {
             .resolve("mcef.properties");
     private static int deleteRetries = 0;
 
-    private boolean skipDownload;
-    private String downloadMirror;
     private String userAgent;
     private boolean useCache;
 
     public MCEFSettings() {
-        skipDownload = false;
-        downloadMirror = "https://mcef-download.cinemamod.com";
         userAgent = null;
         useCache = true;
-    }
-
-    public boolean isSkipDownload() {
-        return skipDownload;
-    }
-
-    public void setSkipDownload(boolean skipDownload) {
-        this.skipDownload = skipDownload;
-        saveAsync();
-    }
-
-    public String getDownloadMirror() {
-        return downloadMirror;
-    }
-
-    public void setDownloadMirror(String downloadMirror) {
-        this.downloadMirror = downloadMirror;
-        saveAsync();
     }
 
     public String getUserAgent() {
@@ -106,8 +84,6 @@ public class MCEFSettings {
         }
 
         Properties properties = new Properties();
-        properties.setProperty("skip-download", String.valueOf(skipDownload));
-        properties.setProperty("download-mirror", String.valueOf(downloadMirror));
         properties.setProperty("user-agent", String.valueOf(userAgent));
         properties.setProperty("use-cache", String.valueOf(useCache));
 
@@ -130,8 +106,6 @@ public class MCEFSettings {
         }
 
         try {
-            skipDownload = Boolean.parseBoolean(properties.getProperty("skip-download"));
-            downloadMirror = properties.getProperty("download-mirror");
             userAgent = properties.getProperty("user-agent");
             useCache = Boolean.parseBoolean(properties.getProperty("use-cache"));
         } catch (Exception e) {

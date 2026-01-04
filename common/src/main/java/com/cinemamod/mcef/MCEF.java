@@ -27,12 +27,10 @@ import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * An API to create Chromium web browsers in Minecraft. Uses
@@ -41,13 +39,20 @@ import java.util.*;
 public final class MCEF {
     public static final Logger LOGGER = LoggerFactory.getLogger("MCEF");
     private static MCEFSettings settings;
-    private static MCEFApp app;
-    private static MCEFClient client;
 
-    private static final ArrayList<MCEFInitListener> awaitingInit = new ArrayList<>();
+    private static boolean initialized = false;
 
-    public static void scheduleForInit(MCEFInitListener task) {
-        awaitingInit.add(task);
+    public static void scheduleForInit(MCEFInitListener listener) {
+        if (isInitialized()) {
+            listener.onInit(true);
+        } else {
+            // Since we no longer have a downloader, we can try to initialize immediately
+            if (initialize()) {
+                listener.onInit(true);
+            } else {
+                listener.onInit(false);
+            }
+        }
     }
 
     public static Logger getLogger() {
@@ -71,71 +76,26 @@ public final class MCEF {
     }
 
     /**
-     * This gets called by {@link com.cinemamod.mcef.mixins.CefInitMixin}.
+     * This gets called by mod entry points.
      * This should not be called by anything else.
      */
     public static boolean initialize() {
+        if (initialized) return true;
+
         MCEFPlatform platform = MCEFPlatform.getPlatform();
         MCEF.getLogger().info("Initializing MCEF on " + platform.getNormalizedName() + "...");
 
-        if (platform.isAndroid()) {
-            MCEF.getLogger().info("Android platform detected, using native WebView bridge");
-            // 在安卓上，我们不需要初始化 JCEF，但需要标记初始化完成
-            // 稍后将处理 client 和 app 的 null 情况或提供 Mock
-            awaitingInit.forEach(t -> t.onInit(true));
-            awaitingInit.clear();
-            return true;
+        if (!platform.isAndroid()) {
+            MCEF.getLogger().warn("MCEF download behavior has been removed. Desktop platforms are no longer supported by automatic setup.");
+            MCEF.getLogger().warn("Only Android platform is supported for now via native WebView bridge.");
+            return false;
         }
 
-        if (CefUtil.init()) {
-            app = new MCEFApp(CefUtil.getCefApp());
-            client = new MCEFClient(CefUtil.getCefClient());
-
-            awaitingInit.forEach(t -> t.onInit(true));
-            awaitingInit.clear();
-            MCEF.getLogger().info("Chromium Embedded Framework initialized");
-
-            app.getHandle().registerSchemeHandlerFactory(
-                    "mod", "",
-                    (browser, frame, url, request) -> new ModScheme(request.getURL())
-            );
-
-            // Handle shutdown events, macOS is special
-            // These are important; the jcef process will linger around if not done
-            if (platform.isLinux() || platform.isWindows()) {
-                Runtime.getRuntime().addShutdownHook(new Thread(MCEF::shutdown, "MCEF-Shutdown"));
-            } else if (platform.isMacOS()) {
-                CefUtil.getCefApp().macOSTerminationRequestRunnable = () -> {
-                    shutdown();
-                    Minecraft.getInstance().stop();
-                };
-            }
-
-            return true;
-        }
-        awaitingInit.forEach(t -> t.onInit(false));
-        awaitingInit.clear();
-        MCEF.getLogger().error("Could not initialize Chromium Embedded Framework");
-        shutdown();
-        return false;
-    }
-
-    /**
-     * Will assert that MCEF has been initialized; throws a {@link RuntimeException} if not.
-     * @return the {@link MCEFApp} instance
-     */
-    public static MCEFApp getApp() {
-        assertInitialized();
-        return app;
-    }
-
-    /**
-     * Will assert that MCEF has been initialized; throws a {@link RuntimeException} if not.
-     * @return the {@link MCEFClient} instance
-     */
-    public static MCEFClient getClient() {
-        assertInitialized();
-        return client;
+        MCEF.getLogger().info("Android platform detected, using native WebView bridge");
+        // Android initialization is currently handled via the delegating MCEFBrowser
+        // which will instantiate AndroidMCEFBrowser when needed.
+        initialized = true;
+        return true;
     }
 
     /**
@@ -144,14 +104,11 @@ public final class MCEF {
      * @return the {@link MCEFBrowser} web browser instance
      */
     public static MCEFBrowser createBrowser(String url, boolean transparent) {
+        assertInitialized();
         if (MCEFPlatform.getPlatform().isAndroid()) {
             return new MCEFBrowser(new AndroidMCEFBrowser(url, transparent));
         }
-        assertInitialized();
-        JCEFBrowser jcefBrowser = new JCEFBrowser(client, url, transparent, true);
-        jcefBrowser.setCloseAllowed();
-        jcefBrowser.createImmediately();
-        return new MCEFBrowser(jcefBrowser);
+        return new MCEFBrowser(url, transparent);
     }
 
     /**
@@ -182,7 +139,7 @@ public final class MCEF {
      * @return true if MCEF is initialized correctly, false if not
      */
     public static boolean isInitialized() {
-        return client != null;
+        return initialized;
     }
 
     /**
@@ -190,64 +147,14 @@ public final class MCEF {
      */
     public static void shutdown() {
         if (isInitialized()) {
-            CefUtil.shutdown();
-            client = null;
-            app = null;
+            initialized = false;
         }
     }
 
-    /**
-     * Check if MCEF has been initialized, throws a {@link RuntimeException} if not.
-     */
     private static void assertInitialized() {
-        if (!isInitialized())
-            throw new RuntimeException("Chromium Embedded Framework was never initialized.");
-    }
-
-    /**
-     * Get the git commit hash of the java-cef code (either from MANIFEST.MF or from the git repo on-disk if in a
-     * development environment). Used for downloading the java-cef release.
-     * @return The git commit hash of java-cef
-     * @throws IOException
-     */
-    public static String getJavaCefCommit() throws IOException {
-        // First check system property
-        if (System.getProperty("mcef.java.cef.commit") != null) {
-            return System.getProperty("mcef.java.cef.commit");
+        if (!isInitialized()) {
+            throw new RuntimeException("MCEF is not initialized!");
         }
-
-        // Try to get from resources (if loading from a jar)
-        Enumeration<URL> resources = MCEF.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
-        Map<String, String> commits = new HashMap<>(1);
-        resources.asIterator().forEachRemaining(resource -> {
-            Properties properties = new Properties();
-            try {
-                properties.load(resource.openStream());
-                if (properties.containsKey("java-cef-commit")) {
-                    commits.put(resource.getFile(), properties.getProperty("java-cef-commit"));
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-
-        if (!commits.isEmpty()) {
-            return commits.get(commits.keySet().stream().toList().get(0));
-        }
-
-        // Try to get from the git submodule (if loading from development environment)
-        ProcessBuilder processBuilder = new ProcessBuilder("git", "submodule", "status", "common/java-cef");
-        processBuilder.directory(new File("../../"));
-        Process process = processBuilder.start();
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            String[] parts = line.trim().split(" ");
-            return parts[0].replace("+", "");
-        }
-
-        return null;
     }
 
     /**

@@ -40,6 +40,7 @@ public class NeoForgeMCEFMod {
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
+        MCEF.initialize();
         if (!FMLEnvironment.production) {
             new MCEFExampleMod();
         }
