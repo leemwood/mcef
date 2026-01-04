@@ -28,7 +28,8 @@ public enum MCEFPlatform {
     WINDOWS_AMD64,
     WINDOWS_ARM64,
     MACOS_AMD64,
-    MACOS_ARM64;
+    MACOS_ARM64,
+    ANDROID_ARM64;
 
     public String getNormalizedName() {
         return name().toLowerCase(Locale.US);
@@ -46,9 +47,17 @@ public enum MCEFPlatform {
         return (this == MACOS_AMD64 || this == MACOS_ARM64);
     }
 
+    public boolean isAndroid() {
+        return (this == ANDROID_ARM64);
+    }
+
     public static MCEFPlatform getPlatform() {
         String os = System.getProperty("os.name").toLowerCase(Locale.US);
         String arch = System.getProperty("os.arch").toLowerCase(Locale.US);
+
+        if (os.contains("android")) {
+            return ANDROID_ARM64;
+        }
 
         if (os.startsWith("linux")) {
             if (arch.equals("amd64")) {

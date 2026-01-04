@@ -35,11 +35,20 @@ public class MCEFRenderer {
     }
 
     public void initialize() {
-        textureID[0] = glGenTextures();
+        if (textureID[0] == 0) {
+            textureID[0] = glGenTextures();
+        }
         RenderSystem.bindTexture(textureID[0]);
         RenderSystem.texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         RenderSystem.texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         RenderSystem.bindTexture(0);
+    }
+
+    public void setTextureID(int id) {
+        if (textureID[0] != 0 && textureID[0] != id) {
+            glDeleteTextures(textureID[0]);
+        }
+        textureID[0] = id;
     }
 
     public int getTextureID() {

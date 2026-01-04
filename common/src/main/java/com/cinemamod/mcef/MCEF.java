@@ -75,7 +75,18 @@ public final class MCEF {
      * This should not be called by anything else.
      */
     public static boolean initialize() {
-        MCEF.getLogger().info("Initializing CEF on " + MCEFPlatform.getPlatform().getNormalizedName() + "...");
+        MCEFPlatform platform = MCEFPlatform.getPlatform();
+        MCEF.getLogger().info("Initializing MCEF on " + platform.getNormalizedName() + "...");
+
+        if (platform.isAndroid()) {
+            MCEF.getLogger().info("Android platform detected, using native WebView bridge");
+            // 在安卓上，我们不需要初始化 JCEF，但需要标记初始化完成
+            // 稍后将处理 client 和 app 的 null 情况或提供 Mock
+            awaitingInit.forEach(t -> t.onInit(true));
+            awaitingInit.clear();
+            return true;
+        }
+
         if (CefUtil.init()) {
             app = new MCEFApp(CefUtil.getCefApp());
             client = new MCEFClient(CefUtil.getCefClient());
@@ -91,7 +102,6 @@ public final class MCEF {
 
             // Handle shutdown events, macOS is special
             // These are important; the jcef process will linger around if not done
-            MCEFPlatform platform = MCEFPlatform.getPlatform();
             if (platform.isLinux() || platform.isWindows()) {
                 Runtime.getRuntime().addShutdownHook(new Thread(MCEF::shutdown, "MCEF-Shutdown"));
             } else if (platform.isMacOS()) {
@@ -134,11 +144,23 @@ public final class MCEF {
      * @return the {@link MCEFBrowser} web browser instance
      */
     public static MCEFBrowser createBrowser(String url, boolean transparent) {
+        if (MCEFPlatform.getPlatform().isAndroid()) {
+            return new MCEFBrowser(new AndroidMCEFBrowser(url, transparent));
+        }
         assertInitialized();
-        MCEFBrowser browser = new MCEFBrowser(client, url, transparent, true);
-        browser.setCloseAllowed();
-        browser.createImmediately();
-        return browser;
+        JCEFBrowser jcefBrowser = new JCEFBrowser(client, url, transparent, true);
+        jcefBrowser.setCloseAllowed();
+        jcefBrowser.createImmediately();
+        return new MCEFBrowser(jcefBrowser);
+    }
+
+    /**
+     * Will assert that MCEF has been initialized; throws a {@link RuntimeException} if not.
+     * Creates a new Chromium web browser with some starting URL.
+     * @return the {@link MCEFBrowser} web browser instance
+     */
+    public static MCEFBrowser createBrowser(String url) {
+        return createBrowser(url, false);
     }
 
     /**
@@ -148,11 +170,10 @@ public final class MCEF {
      * @return the {@link MCEFBrowser} web browser instance
      */
     public static MCEFBrowser createBrowser(String url, boolean transparent, int width, int height) {
-        assertInitialized();
-        MCEFBrowser browser = new MCEFBrowser(client, url, transparent, true);
-        browser.setCloseAllowed();
-        browser.createImmediately();
-        browser.resize(width, height);
+        MCEFBrowser browser = createBrowser(url, transparent);
+        if (browser != null) {
+            browser.resize(width, height);
+        }
         return browser;
     }
 

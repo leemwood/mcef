@@ -96,10 +96,18 @@ public class MCEFDragContext {
     }
 
     public void stopDragging() {
-        dragData.dispose();
-        dragData = null;
+        if (dragData != null) {
+            dragData.dispose();
+            dragData = null;
+        }
         dragMask = 0;
         cursorOverride = -1;
+    }
+
+    public void setDragging(boolean dragging) {
+        if (!dragging) {
+            stopDragging();
+        }
     }
 
     public boolean updateCursor(int operation) {
@@ -119,10 +127,11 @@ public class MCEFDragContext {
             case 16:
                 cursorOverride = CefCursorType.MOVE.ordinal();
                 break;
-            default: // TODO: I'm not sure of the numbers for these
+            default:
                 cursorOverride = -1;
+                break;
         }
 
-        return currentOverride != cursorOverride && cursorOverride != -1;
+        return currentOverride != cursorOverride;
     }
 }
