@@ -44,11 +44,14 @@
 - **编译修复**:
     - `IMCEFBrowser` 增加了默认方法 `sendMouseMove(int x, int y)` 以支持旧版调用。
     - `JCEFBrowser` 的 `isTransparent()` 修复为调用 `renderer.isTransparent()` 以避免递归或父类缺失方法错误。
-    - `CefMouseEvent` 中手动补充了 `MOUSE_PRESSED`, `MOUSE_RELEASED`, `MOUSE_WHEEL` 等缺失常量。
+    - 在 `IMCEFBrowser` 中定义了 `MOUSE_PRESSED`, `MOUSE_RELEASED`, `MOUSE_WHEEL` 常量，以解耦对 `java-cef` 子模块源码的非标准修改，确保 CI 构建时子模块可以正常拉取官方仓库。
+
 
 - **GitHub Actions CI**:
     - 已添加 `.github/workflows/build.yml` 以实现自动构建验证。
     - 配置为使用 JDK 21，在每次 push 和 pull request 时触发。
     - 支持递归子模块拉取以确保 `java-cef` 源码完整。
+    - **修复代理冲突**: 注释了 `gradle.properties` 中的本地代理设置（127.0.0.1:7890），这些设置会导致 CI 环境因找不到代理而构建失败。建议本地开发环境的代理配置放在用户目录的 `.gradle/gradle.properties` 中。
+
 
 
