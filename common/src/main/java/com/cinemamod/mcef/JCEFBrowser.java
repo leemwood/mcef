@@ -388,11 +388,10 @@ public class JCEFBrowser extends CefBrowserOsr implements IMCEFBrowser {
             btnMask &= ~(1 << button);
         }
 
-        CefMouseEvent e = new CefMouseEvent(
-                isRelease ? CefMouseEvent.MOUSE_RELEASED : CefMouseEvent.MOUSE_PRESSED,
+        sendMouseEvent(new CefMouseEvent(
+                isRelease ? MOUSE_RELEASED : MOUSE_PRESSED,
                 mouseX, mouseY, modifiers, clickCount, dragContext.getVirtualModifiers(btnMask)
-        );
-        sendMouseEvent(e);
+        ));
 
         if (isRelease && dragContext.isDragging()) {
             this.dragTargetDrop(new Point(mouseX, mouseY), 0);
@@ -407,7 +406,7 @@ public class JCEFBrowser extends CefBrowserOsr implements IMCEFBrowser {
         mouseX = scaleX(mouseX);
         mouseY = scaleY(mouseY);
 
-        CefMouseWheelEvent e = new CefMouseWheelEvent(CefMouseEvent.MOUSE_WHEEL, mouseX, mouseY, delta, modifiers);
+        CefMouseWheelEvent e = new CefMouseWheelEvent(MOUSE_WHEEL, mouseX, mouseY, delta, modifiers);
         sendMouseWheelEvent(e);
     }
 

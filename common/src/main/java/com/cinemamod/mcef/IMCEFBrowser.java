@@ -2,6 +2,10 @@ package com.cinemamod.mcef;
 
 public interface IMCEFBrowser {
 
+    int MOUSE_PRESSED = 501;
+    int MOUSE_RELEASED = 502;
+    int MOUSE_WHEEL = 507;
+
     void loadURL(String url);
 
     void resize(int width, int height);
