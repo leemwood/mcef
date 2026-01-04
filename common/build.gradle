@@ -64,7 +64,6 @@ jar {
 
 idea {
     module {
-        excludeDirs += file("java-cef/java/tests")
         inheritOutputDirs true
     }
 }

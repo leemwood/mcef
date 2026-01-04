@@ -2,30 +2,12 @@ plugins {
     id 'fabric-loom' version "${fabric_loom_version}" apply false
 }
 
-tasks.register('cloneJcef', Exec) {
-    commandLine 'git', 'submodule', 'update', '--init', '--recursive', 'common/java-cef'
-}
-
 // https://gist.github.com/JonasGroeger/7620911
 def getCheckedOutGitCommitHash(Project mcefParent) {
     try {
-        def gitFolder = "$mcefParent.projectDir/.git/modules/common/java-cef/"
-        def takeFromHash = 40
-        def gitHeadFile = new File(gitFolder + "HEAD");
-        if (gitHeadFile.exists()) {
-            def head = gitHeadFile.text.split(":")
-            def isCommit = head.length == 1
-
-            if (isCommit) return head[0].trim().take(takeFromHash)
-
-            def refPath = head[1].trim()
-            def refHead = new File(gitFolder + refPath)
-            if (refHead.exists()) {
-                return refHead.text.trim().take(takeFromHash)
-            }
-        }
+        // Fallback to a simple string since java-cef submodule is no longer used for versioning
+        return "android-refactor"
     } catch (Exception e) {
-        // Fallback or ignore if .git info is missing
     }
     return "unknown"
 }

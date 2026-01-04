@@ -25,12 +25,11 @@
 - **显式初始化**: 不再使用 Mixin 拦截启动流程，而是通过 [FabricMCEFClientMod.java](file:///e:/project/mcef/fabric/src/main/java/com/cinemamod/mcef/FabricMCEFClientMod.java) 和 [NeoForgeMCEFMod.java](file:///e:/project/mcef/neoforge/src/main/java/com/cinemamod/mcef/NeoForgeMCEFMod.java) 的入口显式调用 `MCEF.initialize()`。
 
 ### 安卓 (ARM64) 环境适配进度
-- **已完成架构重构**:
-    - **接口化**: 引入 `IMCEFBrowser` 接口，解耦 JCEF 依赖。
-    - **兼容性包装**: `MCEFBrowser` 类改为委托模式，内部根据平台持有 `JCEFBrowser` (桌面) 或 `AndroidMCEFBrowser` (安卓) 实例。
-    - **初始化优化**: `MCEF.initialize()` 仅支持安卓平台，非安卓平台将返回失败并打印警告。
-    - **移除下载逻辑**: 删除了所有 JCEF 下载、解压和下载菜单相关的代码。
-    - **反射桥接**: `AndroidBridge` 实现了跨启动器（Pojav/FCL/ZL）的 ActivityThread 反射方案，动态获取 Context。
+- **彻底移除 JCEF**: 删除了所有 JCEF 相关的类（`JCEFBrowser`, `ModScheme`, `MCEFDownloader` 等）和 `build.gradle` 中的相关依赖/任务。
+- **纯净 Android 适配**: `MCEF.initialize()` 现在仅在 Android 平台返回成功，其余平台将打印警告并禁用浏览器功能。
+- **接口化解耦**: 通过 `IMCEFBrowser` 接口彻底解耦了对 `java-cef` 的编译依赖。
+- **CI 优化**: 修复了 CI 中的代理冲突，并增加了构建产物上传和失败报告分析功能。
+- **编译修复**: 移除了 `MCEF.java` 中对 `CefCursorType` 的残余引用，确保脱离 JCEF 也能编译。
 - **后续任务**:
     - 在 `AndroidMCEFBrowser` 中通过 JNI/反射调用 `android.webkit.WebView`。
     - 适配 `MCEFRenderer` 以支持 `SurfaceTexture` 纹理更新。

@@ -22,7 +22,6 @@ package com.cinemamod.mcef;
 
 import com.cinemamod.mcef.listeners.MCEFInitListener;
 import net.minecraft.client.Minecraft;
-import org.cef.misc.CefCursorType;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,15 +155,4 @@ public final class MCEF {
             throw new RuntimeException("MCEF is not initialized!");
         }
     }
-
-    /**
-     * Helper method to get a GLFW cursor handle for the given {@link CefCursorType} cursor type
-     */
-    static long getGLFWCursorHandle(CefCursorType cursorType) {
-        if (CEF_TO_GLFW_CURSORS.containsKey(cursorType)) return CEF_TO_GLFW_CURSORS.get(cursorType);
-        long glfwCursorHandle = GLFW.glfwCreateStandardCursor(cursorType.glfwId);
-        CEF_TO_GLFW_CURSORS.put(cursorType, glfwCursorHandle);
-        return glfwCursorHandle;
-    }
-    private static final HashMap<CefCursorType, Long> CEF_TO_GLFW_CURSORS = new HashMap<>();
 }
