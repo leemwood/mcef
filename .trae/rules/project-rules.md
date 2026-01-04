@@ -52,6 +52,8 @@
     - 配置为使用 JDK 21，在每次 push 和 pull request 时触发。
     - 支持递归子模块拉取以确保 `java-cef` 源码完整。
     - **修复代理冲突**: 注释了 `gradle.properties` 中的本地代理设置（127.0.0.1:7890），这些设置会导致 CI 环境因找不到代理而构建失败。建议本地开发环境的代理配置放在用户目录的 `.gradle/gradle.properties` 中。
+    - **自动上传产物**: 增加了 `upload-artifact` 步骤，构建成功后会自动上传各平台的 `.jar` 产物（过滤了 dev/sources/javadoc 包）。
+
 
 
 

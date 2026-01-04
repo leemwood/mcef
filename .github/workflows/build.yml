@@ -27,3 +27,14 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build --no-daemon -Dhttp.proxyHost= -Dhttp.proxyPort= -Dhttps.proxyHost= -Dhttps.proxyPort=
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcef-artifacts
+          path: |
+            **/build/libs/*.jar
+            !**/build/libs/*-dev.jar
+            !**/build/libs/*-sources.jar
+            !**/build/libs/*-javadoc.jar
+            !common/java-cef/**
