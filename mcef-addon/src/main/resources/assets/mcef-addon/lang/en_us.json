@@ -1,5 +1,16 @@
 {
   "itemGroup.mcef-addon.main": "MCEF Addon",
   "block.mcef-addon.browser_screen": "Browser Screen",
-  "item.mcef-addon.browser_screen": "Browser Screen"
+  "block.mcef-addon.browser_computer": "Browser Computer",
+  "item.mcef-addon.browser_screen": "Browser Screen",
+  "item.mcef-addon.browser_computer": "Browser Computer",
+  "item.mcef-addon.browser_clicker": "Browser Clicker",
+  "gui.mcef-addon.browser_control.title": "Browser Control",
+  "gui.mcef-addon.browser_control.url": "URL",
+  "gui.mcef-addon.browser_control.set_url": "Set URL",
+  "gui.mcef-addon.browser_control.send_keys": "Send Keys",
+  "gui.mcef-addon.browser_control.send_text": "Send Text",
+  "gui.mcef-addon.browser_control.url_label": "Browser URL:",
+  "gui.mcef-addon.browser_control.keys_label": "Simulate Keyboard:",
+  "mcef-addon.description": "An addon for MCEF providing screen blocks and interaction."
 }

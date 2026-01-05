@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "mcef-addon:block/browser_computer" }
+  }
+}

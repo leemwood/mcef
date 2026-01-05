@@ -1,5 +1,16 @@
 {
   "itemGroup.mcef-addon.main": "MCEF 扩展",
   "block.mcef-addon.browser_screen": "浏览器屏幕",
-  "item.mcef-addon.browser_screen": "浏览器屏幕"
+  "block.mcef-addon.browser_computer": "浏览器主机",
+  "item.mcef-addon.browser_screen": "浏览器屏幕",
+  "item.mcef-addon.browser_computer": "浏览器主机",
+  "item.mcef-addon.browser_clicker": "浏览器点击器",
+  "gui.mcef-addon.browser_control.title": "浏览器控制",
+  "gui.mcef-addon.browser_control.url": "网址",
+  "gui.mcef-addon.browser_control.set_url": "设置网址",
+  "gui.mcef-addon.browser_control.send_keys": "发送按键",
+  "gui.mcef-addon.browser_control.send_text": "发送文本",
+  "gui.mcef-addon.browser_control.url_label": "浏览器网址：",
+  "gui.mcef-addon.browser_control.keys_label": "模拟键盘：",
+  "mcef-addon.description": "一个为 MCEF 提供屏幕方块和交互功能的扩展。"
 }

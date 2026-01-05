@@ -38,10 +38,15 @@
 - **注意**: 在 Fabric 1.21.4 的 Mojang 映射中，该方法名为 `setId` 而非 `id`。此外，创造模式物品栏需要通过 `FabricItemGroup` 显式注册并绑定物品。
 - **已知问题**:
     - **OSHI 权限错误**: 在 Android 15+ 环境下，Minecraft 使用的 OSHI 库在读取 CPU 频率信息时会触发 `AccessDeniedException` (SELinux 限制)。这属于系统级权限限制，不影响模组核心功能，可忽略。
-- **后续任务**:
-    - 在 `AndroidMCEFBrowser` 中通过 JNI/反射调用 `android.webkit.WebView`。
-    - 适配 `MCEFRenderer` 以支持 `SurfaceTexture` 纹理更新。
-    - 实现 Minecraft 到 WebView 的事件转换逻辑。
+- **安卓 (ARM64) 渲染与交互**:
+    - **渲染逻辑**: `AndroidMCEFBrowser` 通过反射调用 `android.webkit.WebView` 的 `draw` 方法，将其绘制到 `Bitmap` 上，转换并同步到 OpenGL 纹理。
+    - **GLES 适配**: Android 平台使用 `GL_RGBA` 和 `GL_UNSIGNED_BYTE` 格式更新纹理，而桌面平台使用 `GL_BGRA` 和 `GL_UNSIGNED_INT_8_8_8_8_REV`。
+    - **交互转发**: 鼠标和键盘事件通过反射构造 `MotionEvent` 和 `KeyEvent` 并分发给 `WebView`。
+    - **性能优化**: 渲染循环限制在约 30fps，以平衡性能和功耗。
+- **多方块拼接系统 (4x5+)**:
+    - **扫描逻辑**: 在 `onPlace` 和 `neighborChanged` 时自动扫描相同 `FACING` 的方块，识别矩形区域并确定左下角为 `masterPos`。
+    - **分辨率策略**: 每个方块对应 `512x384` 像素，整个大屏幕的分辨率为 `(width * 512) x (height * 384)`。
+    - **UV 映射**: `BrowserBlockEntityRenderer` 根据方块在网格中的位置 `(gridX, gridY)` 计算 UV 偏移，实现无缝显示。
 
 ### 新增模组开发计划 (MCEF-Addon)
 - **目标版本**: Fabric 1.21.4
@@ -57,6 +62,19 @@
 - **分辨率优化**: 将屏幕方块的默认浏览器分辨率从 `1024x768` 降低至 `512x384`。
     - **原因**: 降低安卓 (ARM64) 平台上的显存占用，修复因分辨率过高导致的纹理创建失败和游戏崩溃问题。
     - **同步修改**: 同时更新了 [BrowserScreenBlock.java](file:///e:/project/mcef/mcef-addon/src/main/java/com/cinemamod/mcef/addon/BrowserScreenBlock.java) 中的鼠标点击坐标映射逻辑，确保点击位置依然准确。
+- **渲染修复**:
+    - **手持模型修复**: 将 [browser_screen.json](file:///e:/project/mcef/mcef-addon/src/main/resources/assets/mcef-addon/models/item/browser_screen.json) 物品模型的父类修改为方块模型 `mcef-addon:block/browser_screen`，修复了手持时材质不显示（紫黑格子或透明）的问题。
+- **交互逻辑增强**:
+    - **Shift+右键优先级**: 在 [BrowserScreenBlock.java](file:///e:/project/mcef/mcef-addon/src/main/java/com/cinemamod/mcef/addon/BrowserScreenBlock.java) 中，将 Shift+右键打开 URL 输入 GUI 的逻辑移到了浏览器检查之前。这确保了在不支持浏览器的平台（如 Windows）上，玩家依然可以通过 Shift+右键打开 GUI 进行配置。
+    - **日志调试**: 增加了在普通右键且浏览器未初始化时的日志输出，方便定位跨平台适配问题。
+    - **服务端同步**: 确保 `useWithoutItem` 在服务端返回 `InteractionResult.CONSUME`，以符合 Minecraft 1.21.4 的交互规范。
+- **多方块拼接系统 (4x5+)**:
+    - **自动检测**: 在 [BrowserScreenBlock.java](file:///e:/project/mcef/mcef-addon/src/main/java/com/cinemamod/mcef/addon/BrowserScreenBlock.java) 中通过 `updateMultiblock` 方法自动扫描并识别矩形区域。
+    - **主从委派**: [BrowserBlockEntity.java](file:///e:/project/mcef/mcef-addon/src/main/java/com/cinemamod/mcef/addon/BrowserBlockEntity.java) 采用主从架构，非左下角的方块将所有操作委派给 `masterPos` 处的方块，确保一个大屏幕只运行一个浏览器实例。
+    - **主机控制**: [BrowserComputerBlock.java](file:///e:/project/mcef/mcef-addon/src/main/java/com/cinemamod/mcef/addon/BrowserComputerBlock.java) 可以作为控制终端，连接到附近的浏览器屏幕。屏幕的 URL 优先受连接的主机控制，实现集中管理。
+    - **点击器交互**: [BrowserClickerItem.java](file:///e:/project/mcef/mcef-addon/src/main/java/com/cinemamod/mcef/addon/BrowserClickerItem.java) 支持左键点击、长按拖拽（发送 `MOUSE_MOVE`）和右键点击（Shift+右键），并伴有音效反馈。
+    - **UV 映射渲染**: [BrowserBlockEntityRenderer.java](file:///e:/project/mcef/mcef-addon/src/main/java/com/cinemamod/mcef/addon/BrowserBlockEntityRenderer.java) 根据方块在网格中的 `(gridX, gridY)` 计算 UV 坐标，实现无缝拼接。
+    - **版本适配 (1.21.4)**: `neighborChanged` 签名已更新为使用 `Orientation` 参数，并导入了 `net.minecraft.world.level.redstone.Orientation`。
 
 ### 构建与环境配置
 - **E 盘构建命令**:

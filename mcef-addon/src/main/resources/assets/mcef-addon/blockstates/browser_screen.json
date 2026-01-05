@@ -1,5 +1,8 @@
 {
   "variants": {
-    "": { "model": "mcef-addon:block/browser_screen" }
+    "facing=north": { "model": "mcef-addon:block/browser_screen" },
+    "facing=south": { "model": "mcef-addon:block/browser_screen", "y": 180 },
+    "facing=east": { "model": "mcef-addon:block/browser_screen", "y": 90 },
+    "facing=west": { "model": "mcef-addon:block/browser_screen", "y": 270 }
   }
 }

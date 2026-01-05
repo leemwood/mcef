@@ -46,13 +46,18 @@ public class BrowserBlockEntityRenderer implements BlockEntityRenderer<BrowserBl
 
         RenderSystem.setShader(CoreShaders.POSITION_TEX);
         
+        float uMin = (float) entity.getGridX() / entity.getGridWidth();
+        float uMax = (float) (entity.getGridX() + 1) / entity.getGridWidth();
+        float vMin = (float) (entity.getGridHeight() - entity.getGridY() - 1) / entity.getGridHeight();
+        float vMax = (float) (entity.getGridHeight() - entity.getGridY()) / entity.getGridHeight();
+
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
         
-        buffer.addVertex(matrix, 0, 0, 0).setUv(1, 1);
-        buffer.addVertex(matrix, 1, 0, 0).setUv(0, 1);
-        buffer.addVertex(matrix, 1, 1, 0).setUv(0, 0);
-        buffer.addVertex(matrix, 0, 1, 0).setUv(1, 0);
+        buffer.addVertex(matrix, 0, 0, 0).setUv(uMin, vMax);
+        buffer.addVertex(matrix, 1, 0, 0).setUv(uMax, vMax);
+        buffer.addVertex(matrix, 1, 1, 0).setUv(uMax, vMin);
+        buffer.addVertex(matrix, 0, 1, 0).setUv(uMin, vMin);
         
         BufferUploader.drawWithShader(buffer.buildOrThrow());
 

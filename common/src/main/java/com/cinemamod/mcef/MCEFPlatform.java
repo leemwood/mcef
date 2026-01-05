@@ -54,8 +54,9 @@ public enum MCEFPlatform {
     public static MCEFPlatform getPlatform() {
         String os = System.getProperty("os.name").toLowerCase(Locale.US);
         String arch = System.getProperty("os.arch").toLowerCase(Locale.US);
+        String version = System.getProperty("os.version", "").toLowerCase(Locale.US);
 
-        if (os.contains("android")) {
+        if (os.contains("android") || version.contains("android")) {
             return ANDROID_ARM64;
         }
 

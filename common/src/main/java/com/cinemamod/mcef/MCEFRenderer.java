@@ -70,15 +70,29 @@ public class MCEFRenderer {
         if (textureID[0] == 0) return;
         if (transparent) RenderSystem.enableBlend();
         RenderSystem.bindTexture(textureID[0]);
-        RenderSystem.pixelStore(GL_UNPACK_ROW_LENGTH, width);
-        RenderSystem.pixelStore(GL_UNPACK_SKIP_PIXELS, 0);
-        RenderSystem.pixelStore(GL_UNPACK_SKIP_ROWS, 0);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
-                GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, buffer);
+        
+        MCEFPlatform platform = MCEFPlatform.getPlatform();
+        if (platform.isAndroid()) {
+            // OpenGL ES compatibility: Use GL_RGBA and GL_UNSIGNED_BYTE
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+                    GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+        } else {
+            RenderSystem.pixelStore(GL_UNPACK_ROW_LENGTH, width);
+            RenderSystem.pixelStore(GL_UNPACK_SKIP_PIXELS, 0);
+            RenderSystem.pixelStore(GL_UNPACK_SKIP_ROWS, 0);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+                    GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, buffer);
+        }
     }
 
     protected void onPaint(ByteBuffer buffer, int x, int y, int width, int height) {
-        glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_BGRA,
-                GL_UNSIGNED_INT_8_8_8_8_REV, buffer);
+        MCEFPlatform platform = MCEFPlatform.getPlatform();
+        if (platform.isAndroid()) {
+            glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA,
+                    GL_UNSIGNED_BYTE, buffer);
+        } else {
+            glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_BGRA,
+                    GL_UNSIGNED_INT_8_8_8_8_REV, buffer);
+        }
     }
 }
