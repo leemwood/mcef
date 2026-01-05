@@ -18,6 +18,7 @@ public class BrowserComputerBlock extends BaseEntityBlock {
 
     public BrowserComputerBlock(Properties properties) {
         super(properties);
+        MCEFAddon.LOGGER.info("BrowserComputerBlock constructor called");
     }
 
     @Override

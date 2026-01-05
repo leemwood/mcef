@@ -54,6 +54,7 @@ public class MCEFAddon implements ModInitializer {
                 blockKey,
                 new BrowserScreenBlock(BlockBehaviour.Properties.of().setId(blockKey).strength(1.0f).noOcclusion())
         );
+        LOGGER.info("Registered Browser Block: {}", BROWSER_BLOCK != null);
 
         BROWSER_BLOCK_ENTITY_TYPE = Registry.register(
                 BuiltInRegistries.BLOCK_ENTITY_TYPE,
@@ -77,6 +78,7 @@ public class MCEFAddon implements ModInitializer {
                 computerKey,
                 new BrowserComputerBlock(BlockBehaviour.Properties.of().setId(computerKey).strength(2.0f))
         );
+        LOGGER.info("Registered Computer Block: {}", COMPUTER_BLOCK != null);
 
         COMPUTER_BLOCK_ENTITY_TYPE = Registry.register(
                 BuiltInRegistries.BLOCK_ENTITY_TYPE,
@@ -89,6 +91,7 @@ public class MCEFAddon implements ModInitializer {
                 computerItemKey,
                 new BlockItem(COMPUTER_BLOCK, new Item.Properties().setId(computerItemKey))
         );
+        LOGGER.info("Registered Computer Item: {}", COMPUTER_ITEM != null);
 
         // Clicker
         ResourceLocation clickerId = ResourceLocation.fromNamespaceAndPath(MOD_ID, "browser_clicker");
@@ -99,6 +102,7 @@ public class MCEFAddon implements ModInitializer {
                 clickerKey,
                 new BrowserClickerItem(new Item.Properties().setId(clickerKey).stacksTo(1))
         );
+        LOGGER.info("Registered Clicker Item: {}", CLICKER_ITEM != null);
 
         // Creative Tab
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, ITEM_GROUP, FabricItemGroup.builder()

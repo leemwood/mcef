@@ -26,12 +26,15 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.redstone.Orientation;
 import org.jetbrains.annotations.Nullable;
 
+import com.cinemamod.mcef.addon.BrowserScreenBlockEntity;
+
 public class BrowserScreenBlock extends BaseEntityBlock {
     public static final Property<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final MapCodec<BrowserScreenBlock> CODEC = simpleCodec(BrowserScreenBlock::new);
 
     public BrowserScreenBlock(Properties properties) {
         super(properties);
+        MCEFAddon.LOGGER.info("BrowserScreenBlock constructor called");
         registerDefaultState(stateDefinition.any().setValue(FACING, net.minecraft.core.Direction.NORTH));
     }
 
@@ -145,7 +148,7 @@ public class BrowserScreenBlock extends BaseEntityBlock {
                 for (int y = 0; y < height; y++) {
                     BlockPos p = masterPos.relative(rightDir, x).above(y);
                     BlockEntity be = level.getBlockEntity(p);
-                    if (be instanceof BrowserBlockEntity bbe) {
+                    if (be instanceof BrowserScreenBlockEntity bbe) {
                         bbe.setMultiblock(masterPos, x, y, width, height, computerPos);
                     }
                 }
@@ -166,14 +169,14 @@ public class BrowserScreenBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new BrowserBlockEntity(pos, state);
+        return new BrowserScreenBlockEntity(pos, state);
     }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide) {
             BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof BrowserBlockEntity browserBe) {
+            if (be instanceof BrowserScreenBlockEntity browserBe) {
                 // Shift + Right Click to open URL GUI - Always available on client
                 if (player.isShiftKeyDown()) {
                     Minecraft.getInstance().setScreen(new BrowserUrlScreen(browserBe));

@@ -9,7 +9,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.lwjgl.glfw.GLFW;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class BrowserUrlScreen extends Screen {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BrowserUrlScreen.class);
     private final BlockEntity entity;
     private EditBox urlField;
     private EditBox inputField;
@@ -17,21 +21,24 @@ public class BrowserUrlScreen extends Screen {
     public BrowserUrlScreen(BlockEntity entity) {
         super(Component.translatable("gui.mcef-addon.browser_control.title"));
         this.entity = entity;
+        LOGGER.info("BrowserUrlScreen constructor called with entity: {}", entity);
     }
 
     private String getEntityUrl() {
+        if (entity instanceof BrowserScreenBlockEntity bbe) return bbe.getUrl();
         if (entity instanceof BrowserBlockEntity bbe) return bbe.getUrl();
         if (entity instanceof BrowserComputerBlockEntity cbe) return cbe.getUrl();
         return "";
     }
 
     private void setEntityUrl(String url) {
+        if (entity instanceof BrowserScreenBlockEntity bbe) bbe.setUrl(url);
         if (entity instanceof BrowserBlockEntity bbe) bbe.setUrl(url);
         if (entity instanceof BrowserComputerBlockEntity cbe) cbe.setUrl(url);
     }
 
     private IMCEFBrowser getBrowser() {
-        if (entity instanceof BrowserBlockEntity bbe) return bbe.getBrowser();
+        if (entity instanceof BrowserScreenBlockEntity bbe) return bbe.getBrowser();
         return null;
     }
 
@@ -53,7 +60,7 @@ public class BrowserUrlScreen extends Screen {
         }).bounds(x, y + 25, w, h).build());
 
         // Only show keyboard input if it's a screen
-        if (entity instanceof BrowserBlockEntity) {
+        if (entity instanceof BrowserScreenBlockEntity) {
             y += 60;
             inputField = new EditBox(font, x, y, w, h, Component.translatable("gui.mcef-addon.browser_control.send_keys"));
             inputField.setMaxLength(256);

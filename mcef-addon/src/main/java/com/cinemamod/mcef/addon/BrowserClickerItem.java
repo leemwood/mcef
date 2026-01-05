@@ -18,6 +18,7 @@ import net.minecraft.world.phys.HitResult;
 public class BrowserClickerItem extends Item {
     public BrowserClickerItem(Properties properties) {
         super(properties);
+        MCEFAddon.LOGGER.info("BrowserClickerItem constructor called");
     }
 
     @Override
@@ -51,12 +52,12 @@ public class BrowserClickerItem extends Item {
                     int usedDuration = getUseDuration(stack, livingEntity) - remainingUseDuration;
                     
                     if (usedDuration == 1) {
-                        // 初次按下
+                        // 初次按下: 发送按下事件
+                        MCEFAddon.LOGGER.info("Clicker: Mouse Press (Button {})", button);
                         BrowserScreenBlock.interactWithBrowser(state, level, hit.getBlockPos(), hit, button, false, false);
                         player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 0.3f, 1.0f);
                     } else {
-                        // 持续按下 (拖拽)
-                        // 我们发送 -1 作为 button 来表示只移动鼠标
+                        // 持续按下: 发送移动事件 (拖拽)
                         BrowserScreenBlock.interactWithBrowser(state, level, hit.getBlockPos(), hit, -1, false, false);
                     }
                 }
@@ -74,7 +75,8 @@ public class BrowserClickerItem extends Item {
                 
                 if (state.getBlock() instanceof BrowserScreenBlock) {
                     int button = player.isShiftKeyDown() ? 2 : 0;
-                    BrowserScreenBlock.interactWithBrowser(state, level, hit.getBlockPos(), hit, button, true);
+                    MCEFAddon.LOGGER.info("Clicker: Mouse Release (Button {})", button);
+                    BrowserScreenBlock.interactWithBrowser(state, level, hit.getBlockPos(), hit, button, true, false);
                 }
             }
         }
